@@ -2,7 +2,8 @@
 library(data.table)
 
 # Load the dataset
-data=read.csv('D:\\DS Lab\\diabetes.csv')
+data=read.csv('C:\\diabetes_test.csv')
+
 
 # Function to calculate Gini index
 calculate_gini <- function(target) {
@@ -48,6 +49,11 @@ find_best_split <- function(data, target) {
         left_indices <- which(data[[col]] <= value)
         right_indices <- which(data[[col]] > value)
         
+        # Check for empty splits
+        if (length(left_indices) == 0 | length(right_indices) == 0) {
+            # Skip this value if either split is empty
+        }
+        
         left_target <- data[[target]][left_indices]
         right_target <- data[[target]][right_indices]
         
@@ -66,10 +72,12 @@ find_best_split <- function(data, target) {
 }
 
 
+
+
 # Function to build decision tree
 build_tree <- function(data, target, max_depth = 10, min_samples_split = 2, current_depth = 0) {
   if (length(unique(data[[target]])) == 1) {
-    return(data[[target]][1])
+    return(list(class = as.character(as.integer(round(mean(data[[target]]))))))  # Create leaf node with class label
   }
   
   if (nrow(data) < min_samples_split) {
@@ -107,18 +115,7 @@ build_tree <- function(data, target, max_depth = 10, min_samples_split = 2, curr
 }
 
 
-# Function to make predictions
-predict_tree <- function(tree, instance) {
-  if (is.character(tree)) {
-    return(as.integer(tree))
-  }
-  
-  if (instance[[tree[["feature"]]]] <= tree[["value"]]) {
-    return(predict_tree(tree[["left"]], instance))
-  } else {
-    return(predict_tree(tree[["right"]], instance))
-  }
-}
+
 
 # Split data into training and testing sets
 set.seed(123) # for reproducibility
@@ -128,6 +125,8 @@ test_data <- data[-train_indices, ]
 
 # Build decision tree
 tree <- build_tree(train_data, "Diabetes_binary")
+summary(tree)
+str(tree)
 
 # Check if tree exists before making predictions
 if (exists("tree")) {
